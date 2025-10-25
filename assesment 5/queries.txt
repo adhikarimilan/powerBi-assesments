@@ -1,0 +1,53 @@
+let
+    Source = Csv.Document(File.Contents("D:\Power BI\power bi assesment\assesment 5\marketing_campaign_A.csv"),[Delimiter=",", Columns=6, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
+in
+    #"Promoted Headers"
+
+let
+    Source = Csv.Document(File.Contents("D:\Power BI\power bi assesment\assesment 5\marketing_campaign_B.csv"),[Delimiter=",", Columns=6, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
+in
+    #"Promoted Headers"
+
+let
+    Source = Csv.Document(File.Contents("D:\Power BI\power bi assesment\assesment 5\marketing_campaign_C.csv"),[Delimiter=",", Columns=6, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Renamed Columns" = Table.RenameColumns(#"Promoted Headers",{{"AcceptedCampaign3", "AcceptedCmp3"}})
+in
+    #"Renamed Columns"
+
+let
+    Source = Table.Combine({marketing_campaign_A, marketing_campaign_B, marketing_campaign_C}),
+    #"Changed Type" = Table.TransformColumnTypes(Source,{{"AcceptedCmp3", Int64.Type}, {"AcceptedCmp4", Int64.Type}, {"AcceptedCmp5", Int64.Type}, {"AcceptedCmp1", Int64.Type}, {"AcceptedCmp2", Int64.Type}})
+in
+    #"Changed Type"
+
+
+let
+    Source = Csv.Document(File.Contents("D:\Power BI\power bi assesment\assesment 5\marketing_sales_data.csv"),[Delimiter="	", Columns=7, Encoding=1200, QuoteStyle=QuoteStyle.None]),
+    #"Removed Top Rows" = Table.Skip(Source,3),
+    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"MntWines", Int64.Type}, {"MntFruits", Int64.Type}, {"MntMeatProducts", Int64.Type}, {"MntFishProducts", Int64.Type}, {"MntSweetProducts", Int64.Type}, {"MntGoldProds", Int64.Type}})
+in
+    #"Changed Type"
+
+
+
+
+let
+    Source = Csv.Document(File.Contents("D:\Power BI\power bi assesment\assesment 5\marketing_customer_data_uncleaned.csv"),[Delimiter=",", Columns=12, Encoding=1252, QuoteStyle=QuoteStyle.Csv]),
+    #"Removed Top Rows" = Table.Skip(Source,2),
+    #"Promoted Headers" = Table.PromoteHeaders(#"Removed Top Rows", [PromoteAllScalars=true]),
+    #"Filtered Rows" = Table.SelectRows(#"Promoted Headers", each ([ID] <> "" and [ID] <> "NA")),
+    #"Removed Duplicates" = Table.Distinct(#"Filtered Rows", {"ID"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Removed Duplicates",{{"Year_Birth", Int64.Type}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{""}),
+    #"Replaced Value" = Table.ReplaceValue(#"Removed Columns","$","",Replacer.ReplaceText,{" Income "}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value",{{" Income ", Currency.Type}}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Changed Type1"," kid(s)","",Replacer.ReplaceText,{"Kidhome"}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Replaced Value1",{{"Kidhome", Int64.Type}, {"Teenhome", Int64.Type}}),
+    #"Changed Type with Locale" = Table.TransformColumnTypes(#"Changed Type2", {{"Dt_Customer", type date}}, "en-US"),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Changed Type with Locale",{{"Complain", Int64.Type}, {"Successful Campaigns", Int64.Type}})
+in
+    #"Changed Type3"
